@@ -1,60 +1,63 @@
-version: "3.5"
-
-networks:
-  app-network:
-    name: app-network
-    driver: bridge
-
-volumes:
-  wp:
-    driver: local
-    name: wp
-    driver_opts:
-      type: none
-      o: bind
-      device: /$HOME/data/wordpress
-  db:
-    driver: local
-    name: db
-    driver_opts:
-      type: none
-      o: bind
-      device: /$HOME/data/mariadb
+version: '3.3'
 
 services:
-  mariadb:
-    container_name: mariadb
-    build: ./requirements/mariadb
-    env_file:
-      - .env
-    volumes:
-      - db:/var/lib/mysql
-    networks:
-      - app-network
-    restart: unless-stopped
-
-  wordpress:
-    container_name: wordpress
-    build: ./requirements/wordpress
-    env_file:
-      - .env
-    depends_on:
-      - mariadb
-    volumes:
-      - wp:/var/www/html
-    networks:
-      - app-network
-    restart: unless-stopped
-
   nginx:
-    container_name: nginx
     build: ./requirements/nginx
+    container_name: nginx
+    image: nginx:latest
+    hostname: nginx
+    volumes:
+      - wordpress_data:/var/www/html
     ports:
-      - "443:443"
+      - 443:443
+    networks:
+      - network
     depends_on:
       - wordpress
+    restart: always
+
+  mariadb:
+    build: ./requirements/mariadb
+    container_name: mariadb
+    image: mariadb:latest
+    hostname: mariadb
+    env_file:
+      - .env
     volumes:
-      - wp:/var/www/html
+      - mariadb_data:/var/lib/mysql
     networks:
-      - app-network
-    restart: unless-stopped
+      - network
+    restart: always
+
+  wordpress:
+    build: ./requirements/wordpress
+    container_name: wordpress
+    image: wordpress:latest
+    hostname: wordpress
+    depends_on:
+      - mariadb
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - network
+
+volumes:
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/senyilma/data/mariadb
+      o: bind
+  wordpress_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/senyilma/data/wordpress
+      o: bind
+
+networks:
+  network:
+    driver: bridge

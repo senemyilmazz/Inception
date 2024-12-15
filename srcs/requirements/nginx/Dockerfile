@@ -1,15 +1,17 @@
 FROM debian:buster
 
-RUN apt-get update && apt-get install -y nginx openssl
-
 EXPOSE 443
 
-COPY ./conf/default/ /etc/nginx/sites-enabled/default
-COPY ./tools/nginx_start.sh /var/www
+RUN apt update && apt upgrade -y
+RUN apt install -y nginx openssl
 
-RUN chmod +x /var/www/nginx_start.sh
+RUN mkdir -p /etc/nginx/ssl /var/run/nginx /var/www/html
+RUN openssl req -x509 -nodes \
+	-out /etc/nginx/ssl/inception.crt \
+	-keyout /etc/nginx/ssl/inception.key \
+	-subj "/C=TR/L=ISTANBUL/O=42Istanbul/OU=SARIYER/CN=senyilma.42.fr/UID=senyilma"
 
-ENTRYPOINT ["var/www/nginx_start.sh"]
+
+COPY conf/default /etc/nginx/sites-available/
 
 CMD ["nginx", "-g", "daemon off;"]
-
