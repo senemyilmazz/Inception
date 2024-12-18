@@ -5,7 +5,7 @@ all: prune set_path
 	@mkdir -p $(DB_PATH)
 	@mkdir -p $(DB_PATH)/wordpress
 	@mkdir -p $(DB_PATH)/mariadb
-	@$(DC) up -d --build
+	@$(DC) up -d 
 
 prune: 
 	@docker container prune --force

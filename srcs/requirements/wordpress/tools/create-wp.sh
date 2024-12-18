@@ -1,6 +1,5 @@
 #!/bin/sh
 
-# Eğer WordPress yapılandırma dosyası yoksa işlemi başlat
 if [ ! -f ./wp-config.php ]; then
 	wget http://wordpress.org/latest.tar.gz
 	tar xfz latest.tar.gz
@@ -15,9 +14,7 @@ if [ ! -f ./wp-config.php ]; then
     wp user create --allow-root "${WP_USERNAME}" "${WP_USERMAIL}" --role="${WP_USERROLE}" --user_pass="${WP_USERPASS}"
 fi
 
-# Eklentileri güncelle
 wp plugin update --all --allow-root
 
-# PHP-FPM başlat
 exec "$@"
 
